@@ -1,5 +1,5 @@
 - name: Aggregate Outputs of Tasks of Multiple Hosts
-  hosts: all
+  hosts: istanbul
   gather_facts: no
   tasks:
     - name: Execute Shell Script on Remote Hosts
