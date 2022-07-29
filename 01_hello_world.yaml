@@ -1,0 +1,17 @@
+---
+- name: Hello world example
+  hosts: istanbul
+  remote_user: devops
+  become: true
+  become_method: sudo
+  become_user: root 
+  vars:
+    students:
+      - ogrenci1
+      - ogrenci2 
+  tasks:
+    - name: Write some string to /etc/motd file 
+      copy: 
+        content: Hello World\nThis is Ansible\n
+        dest: /etc/motd
+

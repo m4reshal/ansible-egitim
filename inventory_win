@@ -1,0 +1,21 @@
+[webservers]
+rheldev ansible_host=192.168.1.182 ansible_password=redhat 
+
+[databases]
+rheldev2 ansible_host=192.168.1.183 remote_user=automation  ansible_port=2222
+
+[windows_hosts]
+winserver ansible_host=192.168.1.9 ansible_connection=winrm ansible_winrm_transport=credssp ansible_winrm_server_cert_validation=ignore  ansible_port=5985 ansible_password=Qq123456 ansible_user=administrator ansible_become=false
+
+
+
+[istanbul:children]
+webservers
+databases
+
+
+[all:vars]
+http_port=80
+
+[istanbul:vars]
+monitoring_ip=10.200.10.10

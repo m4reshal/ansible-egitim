@@ -1,0 +1,18 @@
+[webservers]
+rheldev ansible_host=192.168.1.182 ansible_password=redhat 
+
+[databases]
+rheldev2 ansible_host=192.168.1.183 remote_user=automation  ansible_port=2222
+
+
+
+[istanbul:children]
+webservers
+databases
+
+
+[all:vars]
+http_port=80
+
+[istanbul:vars]
+monitoring_ip=10.200.10.10
