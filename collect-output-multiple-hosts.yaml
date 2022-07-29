@@ -1,0 +1,63 @@
+- name: Aggregate Outputs of Tasks of Multiple Hosts
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Execute Shell Script on Remote Hosts
+      ignore_errors: yes
+      script: "{{ playbook_dir }}/script.sh"
+      changed_when: false
+      register: script_output
+
+    - name: Combine Hostname with Script Output In Case Hostname does not Exist in Log File
+      set_fact:
+        _script_output: "{{ 'Server: ' + inventory_hostname  + '\n'+ script_output.stdout|d('')}}"
+      #when: script_output.stdout_lines | length > 0
+
+    - name: Agregate Outputs of All Hosts
+      debug: 
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, '_script_output') | list | map('replace', '\\r\\n','\r\n') | list }}" 
+        #msg: "{{ ansible_play_hosts | map('extract', hostvars, '_script_output') | list  | join('\n') | replace('\\r\\n', '\r\n')  }}" 
+      delegate_to: localhost
+      run_once: true
+
+
+    - name: Agregate Outputs of All Hosts -  Loop
+      debug: 
+        msg: "{{ item.split('\n') }}" 
+      loop: "{{ ansible_play_hosts | map('extract', hostvars, '_script_output') | list }}"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Agregate Outputs of All Hosts
+      copy:
+        content: "{{ ansible_play_hosts | map('extract', hostvars, '_script_output') | list | join('\n') | replace('\\r\\n', '\r\n') }}" 
+        #content: "{{ ansible_play_hosts | map('extract', hostvars, 'script_output') | map(attribute='stdout_lines') | list }}" 
+        #dest: "{{ playbook_dir }}/log4j_output-{{ tower_job_id }}.txt"
+        dest: "/tmp/log4j_output-{{ tower_job_id }}.txt"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Print Unreachable Hosts
+      block:
+        - set_fact:
+            down: "{{ ansible_play_hosts_all|difference(ansible_play_hosts) }}"
+        - debug:
+            var: down
+        - name: Agregate Outputs of All Hosts
+          copy:
+            content: "{{ down  | join('\n') | replace('\\r\\n', '\r\n') }}"
+            dest: "/tmp/log4j_unreachable-{{ tower_job_id }}.txt"
+      delegate_to: localhost
+      run_once: true
+
+    - meta: end_play
+
+    #- name: Agregate Outputs of All Hosts
+    #  local_action:
+    #    module: copy
+    #    content: "{{ ansible_play_hosts | map('extract', hostvars, 'script_output') | map(attribute='stdout_lines') | list }}" 
+    #    #dest: "/var/lib/awx/projects/vmware/log4j_output-{{ tower_job_id }}.txt"
+    #    #dest: "{{ playbook_dir }}/log4j_output-{{ tower_job_id }}.txt"
+    #    dest: "/tmp/log4j_output-{{ tower_job_id }}.txt"
+    #  delegate_to: localhost
+    #  run_once: true
