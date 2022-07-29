@@ -1,0 +1,25 @@
+---
+- name: Install Apache and start service
+  hosts: webservers
+  tasks:
+    - name: Install httpd package
+      yum: 
+        name: httpdd
+        state: latest
+
+
+    - name: Copy index file
+      copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+      register: copy_module_output
+
+
+    - name: Start httpd service
+      service:
+        name: httpd
+        state: restarted
+        enabled: yes 
+      when: copy_module_output.changed
+
+
