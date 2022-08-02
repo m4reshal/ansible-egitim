@@ -1,0 +1,73 @@
+---
+- name: Lets create a report of failed task and servers
+  hosts: istanbul
+  tasks:
+
+    #- name: Print hostvars variable
+    #  debug:
+    #    var: hostvars
+   
+    - name: Get current time to a variable 
+      shell: "date -d now +%H%M%S"
+      register: time_now
+      run_once: true
+
+    - name: First Simple task  Block
+      block:
+       - name: First Simple task
+         command: "ls -l /tmp"
+         failed_when: inventory_hostname == "rheldev2"
+         register: first_task_output
+      rescue:
+        - name: Print Results associated with Fail - for variable ansible_failed_result
+          debug:
+            msg: "{{ ansible_failed_result }}"
+
+        - name: Print Results associated with Fail - for variable ansible_failed_task
+          debug:
+            msg: "{{ ansible_failed_task }}"
+
+        - name: Record failure
+          lineinfile:
+            path: "/tmp/execution-failures-{{ time_now.stdout }}.csv"
+            line: '"{{ inventory_hostname }}";"{{ ansible_failed_task[''name''] }}";"{{ ansible_failed_result[''stderr''] }}";"{{ ansible_failed_result[''stdout''] }}"'
+            #line: '"{{ inventory_hostname }}";"{{ tower_job_id }}";"{{ ansible_failed_task[''name''] }}";"{{ ansible_failed_result[''stderr''] }}";"{{ ansible_failed_result[''stdout''] }}"'
+            create: yes
+          delegate_to: localhost
+
+##CSV output kendi ciktimizi yazmak icin:
+        - name: Create a  csv output for hosts which are failed at 'First Simple task'
+          set_fact:
+            first_task_fail_output: "{{ 'Server: ' + inventory_hostname  + ';' + '/tmp dizin ciktisi alinamamistir' + ';' + first_task_output.stdout|d('') }}"
+
+        - name: Fail the task for the hosts which are Failed in Real
+          fail:
+            msg: "Fail triggered for {{ inventory_hostname }}"
+
+
+    - name: Second Simple task Block
+      block:
+        - name: Second Simple task
+          command: "/bin/true"
+      rescue: 
+        - name: Record failure
+          lineinfile:
+            path: "/tmp/execution-failures-{{ time_now.stdout }}.csv"
+            line: '"{{ inventory_hostname }}";"{{ ansible_failed_task[''name''] }}";"{{ ansible_failed_result[''stderr''] }}";"{{ ansible_failed_result[''stdout''] }}"'
+            #line: '"{{ inventory_hostname }}","{{ tower_job_id }}","{{ ansible_failed_task[''name''] }}","{{ ansible_failed_result[''stderr''] }}","{{ ansible_failed_result[''stdout''] }}"'
+            create: yes
+          delegate_to: localhost
+
+
+    - name: Third Simple task Block
+      block:
+        - name: Third Simple task
+          command: "/bin/false"
+      rescue: 
+        - name: Record failure
+          lineinfile:
+            path: "/tmp/execution-failures-{{ time_now.stdout }}.csv"
+            line: '"{{ inventory_hostname }}";"{{ ansible_failed_task[''name''] }}";"{{ ansible_failed_result[''stderr''] }}";"{{ ansible_failed_result[''stdout''] }}"'
+            #line: '"{{ inventory_hostname }}","{{ tower_job_id }}","{{ ansible_failed_task[''name''] }}","{{ ansible_failed_result[''stderr''] }}","{{ ansible_failed_result[''stdout''] }}"'
+            create: yes
+          delegate_to: localhost

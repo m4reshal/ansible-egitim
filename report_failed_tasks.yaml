@@ -1,0 +1,70 @@
+---
+- name: Lets create a report of failed task and servers
+  hosts: istanbul
+  tasks:
+
+    #- name: Print hostvars variable
+    #  debug:
+    #    var: hostvars
+
+    - name: First Simple task 
+      command: "ls -l /tmp/example.txt"
+      #failed_when: inventory_hostname == "rheldev2"   ##Sadece ilk sunucuda mevcut.
+      register: first_task_output
+      ignore_errors: true
+
+
+#{{ dict(keys_list | zip(values_list)) }}
+#keys_list:
+#  - one
+#  - two
+#values_list:
+#  - apple
+#  - orange
+
+#After applying filters:
+#one: apple
+#two: orange
+
+
+    - name: Create a dictionary  with previous' task's output(first_task_output)
+      set_fact:
+        dict_first_task_output: "{{ dict(ansible_play_hosts|zip(ansible_play_hosts|map('extract', hostvars, 'first_task_output')) ) }}"
+      run_once: true
+
+    - name: Print newly created Dictionary for debug ( dict_first_task_output )
+      debug:
+        msg: "{{ dict_first_task_output }}"
+
+    - name: Get the list of failed Hosts on First Simple task 
+      vars:
+        json_query: "[?value.failed].key"
+      set_fact:
+        first_task_failed_hosts: "{{ dict_first_task_output | dict2items | json_query(json_query) }}"
+      run_once: true
+
+    - name: Get the list of  Hosts on First Simple task   with a specific  string in output
+      vars:
+        #json_query: "[?!contains(value.stderr,`cannot access`)].key"
+        json_query: "[?value.rc==`{{ 0 | int }}`].key"
+      set_fact:
+        first_task_specific_hosts: "{{ dict_first_task_output | dict2items | json_query(json_query) }}"
+      run_once: true
+
+    #- name: Format outputs of 'First Simple task'
+    #  set_fact:
+    #    first_task_fail_output: "{{ 'Server: ' + inventory_hostname  + ';' + '/tmp dizin ciktisi alinamamistir' + first_task_output.stdout|d('') }}"
+    #  when: first_task_output.failed  and first_task_output.failed is defined 
+
+    #- name: Print first_task_fail_list
+    #  debug:
+    #    msg: "{{ first_task_fail_list }}"
+
+
+
+    - name: Second Simple task
+      command: "/bin/true"
+
+    - name: Third Simple task
+      command: "/bin/false"
+

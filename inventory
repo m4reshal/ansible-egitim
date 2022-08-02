@@ -2,7 +2,7 @@
 rheldev ansible_host=192.168.1.182 ansible_password=redhat 
 
 [databases]
-rheldev2 ansible_host=192.168.1.183 remote_user=automation  ansible_port=2222
+rheldev2 ansible_host=192.168.1.183 ansible_port=22 ansible_password=redhatt
 
 
 
