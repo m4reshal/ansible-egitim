@@ -23,6 +23,7 @@
         path: C:\Temp\example_service.conf
         regex: '^name='
         line: "name=importantconfigvalue"
+        state: present
       notify:
         - Second handler task
         - First handler task
