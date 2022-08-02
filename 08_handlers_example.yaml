@@ -24,6 +24,7 @@
         regex: '^name='
         line: "name=importantconfigvalue"
         state: present
+        create: yes
       notify:
         - Second handler task
         - First handler task
