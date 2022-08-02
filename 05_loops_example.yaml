@@ -20,7 +20,7 @@
         name: "{{ paket }}"
         state: present
       loop: "{{ packages | default([]) }}"
-      register: multiple_element_outpout
+      register: multiple_element_output
       loop_control: 
         loop_var: paket
         index_var: index
