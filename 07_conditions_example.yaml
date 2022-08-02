@@ -1,0 +1,19 @@
+---
+- name: Conditions example on windows server
+  hosts: windows_hosts
+  gather_facts: no
+  tasks:
+    - name: Gather info from servers
+      setup:
+
+
+    - name: Print some message
+      vars:
+        skip_debug: false 
+      debug: 
+        msg: "All conditions are true!"
+      when: 
+        - '"Windows" in ansible_distribution'
+        - (ansible_memtotal_mb | int) >= 4096  and ansible_architecture == '64-bit'
+        - not skip_debug
+
