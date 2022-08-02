@@ -1,0 +1,23 @@
+---
+# tasks file for install_apache
+    - name: Install block
+      block:
+        - name: Install httpd package
+          yum:
+            name: httpd
+            state: latest
+
+
+        - name: Copy index file
+          copy:
+            src: index.html
+            dest: /var/www/html/index.html
+          register: copy_module_output
+
+
+        - name: Start httpd service
+          service:
+            name: httpd
+            state: restarted
+            enabled: yes
+          when: copy_module_output.changed
