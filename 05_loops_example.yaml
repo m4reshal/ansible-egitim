@@ -1,0 +1,38 @@
+---
+- name: Loop example play
+  hosts: webservers
+  vars:
+    packages:
+      - httpd
+      - mariadb
+      - xclock
+  tasks:
+    - name: Install a single package
+      yum:
+        name: httpd
+        state: present
+      register: one_element_output 
+
+
+
+    - name: Install multiple packages 
+      yum:
+        name: "{{ paket }}"
+        state: present
+      loop: "{{ packages | default([]) }}"
+      register: multiple_element_outpout
+      loop_control: 
+        loop_var: paket
+        index_var: index
+
+
+
+    - name: Debug - one element output
+      debug:
+        msg: "{{ one_element_output }}"
+        #var: one_element_output
+
+    - name: Debug - multiple element
+      debug: 
+        msg: "{{ multiple_element_output }}"
+        
