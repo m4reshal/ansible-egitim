@@ -9,11 +9,12 @@
 
     - name: Print some message
       vars:
-        skip_debug: false 
+        skip_debug: "0" 
       debug: 
         msg: "All conditions are true! value of  skip_debug var= {{ skip_debug }}"
       when: 
         - '"Windows" in ansible_distribution'
         - (ansible_memtotal_mb | int) >= 4096  and ansible_architecture == '64-bit'
-        - not ( skip_debug | bool  )
+        - not  skip_debug
+        #- not ( skip_debug | bool  )
 
