@@ -1,0 +1,44 @@
+---
+- name:  Tags usage
+  hosts: webservers
+  gather_facts: yes
+  vars:
+    user: devops
+  tasks:
+    - name: Add MatchUser Block in sshd_conf file for user {{ user }}
+      blockinfile:
+        marker: "#{mark} ANSIBLE MANAGED BLOCK for user {{ user }}"
+        path: /etc/ssh/sshd_config
+        block: |
+          Match User {{ user }}
+            PasswordAuthentication yes
+            PubkeyAuthentication yes
+        validate:  /usr/sbin/sshd -T -f %s
+      tags: ssh
+      notify: 
+        - Print Message
+        - Restart sshd service
+
+
+    - name: Execute shell command
+      shell: "uname -r"
+      tags: commands
+ 
+    - name: Print text message
+      debug:
+        msg: "This message is always printed."
+      tags: always
+
+    - name: Task without a tag
+      debug:
+        msg: "Bu task tagsiz kullanilmaktadir"
+
+  handlers:
+    - name: Restart sshd service 
+      service:
+        name: sshd
+        state: restarted
+
+    - name: Print Message
+      debug:
+        msg: "Handler calismistir."
